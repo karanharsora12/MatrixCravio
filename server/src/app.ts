@@ -27,7 +27,7 @@ export function createApp() {
   app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
   // Health check
-  app.get('/api/health', (req, res) => {
+  app.get(['/health', '/api/health'], (req, res) => {
     res.json({
       status: 'healthy',
       platform: 'Matrix Cravio',

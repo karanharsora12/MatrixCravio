@@ -8,8 +8,10 @@
     "dev": "tsx watch src/server.ts",
     "build": "tsc",
     "start": "node dist/server.js",
+    "start:migrate": "node dist/database/migrate.js && node dist/server.js",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "tsx src/database/migrate.ts",
+    "db:migrate:prod": "node dist/database/migrate.js",
     "db:push": "drizzle-kit push",
     "db:seed": "tsx src/database/seed.ts",
     "test": "vitest run"
