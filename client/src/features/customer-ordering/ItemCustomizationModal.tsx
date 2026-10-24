@@ -5,6 +5,7 @@ import { MenuItem, MenuItemVariant, Addon } from '../../types/index.js';
 import { formatCurrency } from '../../lib/utils.js';
 import { Minus, Plus, Flame, Leaf, Wheat, Info } from 'lucide-react';
 import { useCartStore } from '../cart/CartStore.js';
+import { toast } from '../../components/ui/Toast.js';
 
 interface ItemCustomizationModalProps {
   isOpen: boolean;
@@ -87,6 +88,7 @@ export const ItemCustomizationModal: React.FC<ItemCustomizationModalProps> = ({
       quantity,
       specialInstructions: specialInstructions.trim() || undefined,
     });
+    toast.success('Added to Cart', item.name);
     onClose();
   };
 

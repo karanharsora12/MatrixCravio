@@ -5,6 +5,8 @@ import { Button } from '../../components/ui/Button.js';
 import { Dialog } from '../../components/ui/Dialog.js';
 import { Input } from '../../components/ui/Input.js';
 import { Select } from '../../components/ui/Select.js';
+import { useConfirm } from '../../components/ui/AlertDialog.js';
+import { toast } from '../../components/ui/Toast.js';
 import { PrintableQRLabelsModal } from './PrintableQRLabelsModal.js';
 import { getTableStatusBadge } from '../../lib/utils.js';
 import { QRCodeSVG } from 'qrcode.react';
@@ -20,6 +22,7 @@ import { useAuthStore } from '../auth/AuthStore.js';
 
 export const TableManagementPage: React.FC = () => {
   const currentRestaurant = useAuthStore((state) => state.currentRestaurant);
+  const { confirm } = useConfirm();
   const [tables, setTables] = useState<DiningTable[]>([]);
   const [selectedZone, setSelectedZone] = useState<string>('all');
   const [isLoading, setIsLoading] = useState(true);
@@ -65,10 +68,11 @@ export const TableManagementPage: React.FC = () => {
         setIsCreateOpen(false);
         setTableNumber('');
         setDisplayName('');
+        toast.success('Table Created', `Table ${tableNumber} has been added.`);
         fetchTables();
       }
     } catch (err: any) {
-      alert(err.message || 'Failed to create table');
+      toast.error('Failed to Create Table', err.message);
     } finally {
       setIsSubmitting(false);
     }
@@ -77,20 +81,30 @@ export const TableManagementPage: React.FC = () => {
   const handleUpdateStatus = async (tableId: string, status: string) => {
     try {
       await api.put(`/tables/${tableId}/status`, { status });
+      toast.info('Table Status Updated', `Status changed to ${status.toLowerCase()}.`);
       fetchTables();
     } catch (err: any) {
-      alert(err.message || 'Failed to update status');
+      toast.error('Failed to update status', err.message);
     }
   };
 
-  const handleRegenerateQR = async (tableId: string) => {
-    if (!confirm('Regenerating this QR code will revoke the previous code immediately. Continue?')) return;
+  const handleRegenerateQR = async (tableId: string, tableNum?: string) => {
+    const ok = await confirm({
+      title: 'Regenerate Table QR Code?',
+      description: `Regenerating this QR code for ${tableNum || 'this table'} will immediately revoke the existing physical QR code. Customers scanning the old code will no longer be able to order.`,
+      confirmText: 'Regenerate QR Token',
+      cancelText: 'Keep Existing',
+      variant: 'warning',
+    });
+
+    if (!ok) return;
+
     try {
       await api.post(`/tables/${tableId}/qr/generate`);
       fetchTables();
-      alert('New QR code generated successfully!');
+      toast.success('New QR Code Generated', 'The cryptographic table token has been refreshed.');
     } catch (err: any) {
-      alert(err.message || 'Failed to regenerate QR');
+      toast.error('Failed to regenerate QR', err.message);
     }
   };
 

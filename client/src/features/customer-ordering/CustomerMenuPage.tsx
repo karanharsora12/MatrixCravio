@@ -8,6 +8,7 @@ import { formatCurrency } from '../../lib/utils.js';
 import { useCartStore } from '../cart/CartStore.js';
 import { Search, Flame, Leaf, Wheat, Plus, AlertCircle, Sparkles } from 'lucide-react';
 import { Skeleton } from '../../components/ui/Skeleton.js';
+import { toast } from '../../components/ui/Toast.js';
 
 export const CustomerMenuPage: React.FC = () => {
   const { qrToken } = useParams<{ qrToken: string }>();
@@ -105,6 +106,7 @@ export const CustomerMenuPage: React.FC = () => {
         unitPrice: parseFloat(item.basePrice),
         quantity: 1,
       });
+      toast.success('Added to Cart', item.name);
     }
   };
 

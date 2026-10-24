@@ -6,6 +6,8 @@ import { Dialog } from '../../components/ui/Dialog.js';
 import { Input } from '../../components/ui/Input.js';
 import { Select } from '../../components/ui/Select.js';
 import { ImageUpload } from '../../components/ui/ImageUpload.js';
+import { useConfirm } from '../../components/ui/AlertDialog.js';
+import { toast } from '../../components/ui/Toast.js';
 import { formatCurrency } from '../../lib/utils.js';
 import {
   BookOpen,
@@ -22,6 +24,7 @@ import { useAuthStore } from '../auth/AuthStore.js';
 
 export const MenuManagementPage: React.FC = () => {
   const currentRestaurant = useAuthStore((state) => state.currentRestaurant);
+  const { confirm } = useConfirm();
   const [categories, setCategories] = useState<MenuCategory[]>([]);
   const [selectedCategoryId, setSelectedCategoryId] = useState<string>('all');
   const [isLoading, setIsLoading] = useState(true);
@@ -92,18 +95,29 @@ export const MenuManagementPage: React.FC = () => {
           ),
         }))
       );
+      toast.info(current ? 'Item marked as Sold Out (86\'d)' : 'Item marked Available');
     } catch (err: any) {
-      alert(err.message || 'Failed to update item status');
+      toast.error('Failed to update status', err.message);
     }
   };
 
   const handleDeleteItem = async (itemId: string) => {
-    if (!confirm('Are you sure you want to permanently remove this dish from the menu?')) return;
+    const ok = await confirm({
+      title: 'Remove Dish From Menu?',
+      description: 'This will permanently remove this item from the active menu catalog and customer ordering portal.',
+      confirmText: 'Delete Dish',
+      cancelText: 'Keep Dish',
+      variant: 'destructive',
+    });
+
+    if (!ok) return;
+
     try {
       await api.delete(`/menu/items/${itemId}`);
+      toast.success('Dish Deleted', 'Menu item has been permanently removed.');
       fetchMenu();
     } catch (err: any) {
-      alert(err.message || 'Failed to delete dish');
+      toast.error('Delete Failed', err.message);
     }
   };
 
@@ -149,10 +163,11 @@ export const MenuManagementPage: React.FC = () => {
       if (res.success) {
         setIsEditItemOpen(false);
         setEditingItem(null);
+        toast.success('Dish Updated', `${editName} recipe & pricing saved.`);
         fetchMenu();
       }
     } catch (err: any) {
-      alert(err.message || 'Failed to update dish');
+      toast.error('Update Failed', err.message);
     } finally {
       setIsSubmitting(false);
     }
@@ -189,10 +204,11 @@ export const MenuManagementPage: React.FC = () => {
         setBasePrice('');
         setImageUrl('');
         setAllergensText('');
+        toast.success('Dish Added', `${name} is now live on the menu.`);
         fetchMenu();
       }
     } catch (err: any) {
-      alert(err.message || 'Failed to create item');
+      toast.error('Failed to Add Dish', err.message);
     } finally {
       setIsSubmitting(false);
     }
@@ -209,10 +225,11 @@ export const MenuManagementPage: React.FC = () => {
         setIsAddCatOpen(false);
         setCatName('');
         setCatDesc('');
+        toast.success('Category Added', `${catName} is available.`);
         fetchMenu();
       }
     } catch (err: any) {
-      alert(err.message || 'Failed to create category');
+      toast.error('Failed to Add Category', err.message);
     }
   };
 

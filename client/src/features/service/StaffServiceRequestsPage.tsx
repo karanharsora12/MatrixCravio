@@ -3,6 +3,7 @@ import { api } from '../../lib/api.js';
 import { getSocket } from '../../lib/socket.js';
 import { ServiceRequest } from '../../types/index.js';
 import { Button } from '../../components/ui/Button.js';
+import { toast } from '../../components/ui/Toast.js';
 import { formatDateTime } from '../../lib/utils.js';
 import { Bell, Droplet, UtensilsCrossed, Receipt, CheckCircle, Clock } from 'lucide-react';
 
@@ -41,18 +42,20 @@ export const StaffServiceRequestsPage: React.FC = () => {
   const handleAcknowledge = async (id: string) => {
     try {
       await api.put(`/service-requests/${id}/acknowledge`);
+      toast.info('Request Acknowledged', 'Staff member assigned to table.');
       fetchRequests();
     } catch (err: any) {
-      alert(err.message || 'Failed to acknowledge request');
+      toast.error('Failed to acknowledge request', err.message);
     }
   };
 
   const handleResolve = async (id: string) => {
     try {
       await api.put(`/service-requests/${id}/resolve`);
+      toast.success('Request Resolved', 'Table service complete.');
       fetchRequests();
     } catch (err: any) {
-      alert(err.message || 'Failed to resolve request');
+      toast.error('Failed to resolve request', err.message);
     }
   };
 

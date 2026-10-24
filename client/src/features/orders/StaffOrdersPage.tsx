@@ -5,6 +5,7 @@ import { Order, OrderStatus } from '../../types/index.js';
 import { formatCurrency, formatDateTime, getOrderStatusBadge } from '../../lib/utils.js';
 import { Button } from '../../components/ui/Button.js';
 import { Dialog } from '../../components/ui/Dialog.js';
+import { toast } from '../../components/ui/Toast.js';
 import {
   UtensilsCrossed,
   Clock,
@@ -59,9 +60,10 @@ export const StaffOrdersPage: React.FC = () => {
   const handleUpdateStatus = async (orderId: string, targetStatus: OrderStatus) => {
     try {
       await api.put(`/orders/${orderId}/status`, { status: targetStatus });
+      toast.success('Order Status Updated', `Status set to ${targetStatus.toLowerCase()}`);
       fetchOrders();
     } catch (err: any) {
-      alert(err.message || 'Failed to update order status');
+      toast.error('Failed to update status', err.message);
     }
   };
 
@@ -72,9 +74,10 @@ export const StaffOrdersPage: React.FC = () => {
       await api.post(`/orders/${cancellingOrderId}/cancel`, { reason: cancelReason });
       setCancellingOrderId(null);
       setCancelReason('');
+      toast.warning('Order Cancelled', 'The order has been cancelled.');
       fetchOrders();
     } catch (err: any) {
-      alert(err.message || 'Failed to cancel order');
+      toast.error('Failed to cancel order', err.message);
     } finally {
       setIsCancelling(false);
     }

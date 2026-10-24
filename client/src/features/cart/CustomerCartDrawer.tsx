@@ -6,6 +6,8 @@ import { formatCurrency } from '../../lib/utils.js';
 import { Trash2, Plus, Minus, ArrowRight, ShoppingBag, Utensils } from 'lucide-react';
 import { api } from '../../lib/api.js';
 import { useNavigate } from 'react-router-dom';
+import { useConfirm } from '../../components/ui/AlertDialog.js';
+import { toast } from '../../components/ui/Toast.js';
 
 interface CustomerCartDrawerProps {
   isOpen: boolean;
@@ -23,6 +25,7 @@ export const CustomerCartDrawer: React.FC<CustomerCartDrawerProps> = ({
   tableNumber,
 }) => {
   const navigate = useNavigate();
+  const { confirm } = useConfirm();
   const {
     items,
     updateQuantity,
@@ -50,8 +53,32 @@ export const CustomerCartDrawer: React.FC<CustomerCartDrawerProps> = ({
   const serviceCharge = getServiceChargeAmount();
   const total = getGrandTotal();
 
+  const handleClearCart = async () => {
+    const ok = await confirm({
+      title: 'Empty Your Order Cart?',
+      description: 'Are you sure you want to remove all selected dishes from your order?',
+      confirmText: 'Empty Cart',
+      cancelText: 'Keep Items',
+      variant: 'destructive',
+    });
+    if (ok) {
+      clearCart();
+      toast.info('Cart cleared');
+    }
+  };
+
   const handlePlaceOrder = async () => {
     if (items.length === 0) return;
+
+    const ok = await confirm({
+      title: 'Confirm Table Order',
+      description: `Send ${items.length} item(s) to the kitchen for ${tableNumber} totaling ${formatCurrency(total, currencySymbol)}. Your food will begin preparation immediately.`,
+      confirmText: 'Confirm & Send Order',
+      cancelText: 'Review Items',
+      variant: 'default',
+    });
+
+    if (!ok) return;
 
     setIsSubmitting(true);
     setError(null);
@@ -79,14 +106,19 @@ export const CustomerCartDrawer: React.FC<CustomerCartDrawerProps> = ({
       const res: any = await api.post('/public/orders', orderPayload);
 
       if (res.success && res.orderId) {
+        toast.success('Order Received!', `Order ${res.orderNumber || ''} has been sent to the kitchen.`);
         clearCart();
         onClose();
         navigate(`/order/${res.orderId}`);
       } else {
-        setError(res.message || 'Failed to place order');
+        const msg = res.message || 'Failed to place order';
+        setError(msg);
+        toast.error('Order Submission Failed', msg);
       }
     } catch (err: any) {
-      setError(err.message || 'Something went wrong while submitting your order');
+      const msg = err.message || 'Something went wrong while submitting your order';
+      setError(msg);
+      toast.error('Order Error', msg);
     } finally {
       setIsSubmitting(false);
     }
@@ -127,6 +159,20 @@ export const CustomerCartDrawer: React.FC<CustomerCartDrawerProps> = ({
         </div>
       ) : (
         <div className="space-y-4">
+          {/* Header & Clear Option */}
+          <div className="flex items-center justify-between pb-1 border-b border-border/40">
+            <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+              Selected Items ({items.reduce((acc, i) => acc + i.quantity, 0)})
+            </span>
+            <button
+              type="button"
+              onClick={handleClearCart}
+              className="text-xs font-semibold text-rose-500 hover:text-rose-600 transition-colors"
+            >
+              Clear Cart
+            </button>
+          </div>
+
           {/* Items List */}
           <div className="space-y-3 divide-y divide-border/40 pr-1">
             {items.map((item) => (

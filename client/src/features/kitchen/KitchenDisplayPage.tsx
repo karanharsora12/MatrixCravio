@@ -3,6 +3,7 @@ import { api } from '../../lib/api.js';
 import { getSocket } from '../../lib/socket.js';
 import { Order, OrderStatus } from '../../types/index.js';
 import { Button } from '../../components/ui/Button.js';
+import { toast } from '../../components/ui/Toast.js';
 import {
   ChefHat,
   Clock,
@@ -79,9 +80,10 @@ export const KitchenDisplayPage: React.FC = () => {
 
     try {
       await api.put(`/orders/${orderId}/status`, { status: nextStatus });
+      toast.success('Ticket Advanced', `Order advanced to ${nextStatus.toLowerCase()}`);
       fetchQueue();
     } catch (err: any) {
-      alert(err.message || 'Failed to advance status');
+      toast.error('Failed to advance status', err.message);
     }
   };
 

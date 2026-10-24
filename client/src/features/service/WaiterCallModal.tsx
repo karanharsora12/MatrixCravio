@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Dialog } from '../../components/ui/Dialog.js';
 import { Button } from '../../components/ui/Button.js';
+import { toast } from '../../components/ui/Toast.js';
 import { api } from '../../lib/api.js';
 import { Bell, Droplet, Receipt, UtensilsCrossed, CheckCircle2, Sparkles } from 'lucide-react';
 import { ServiceRequestType } from '../../types/index.js';
@@ -44,13 +45,16 @@ export const WaiterCallModal: React.FC<WaiterCallModalProps> = ({
         notes: notes.trim() || undefined,
       });
       setIsSuccess(true);
+      toast.success('Staff Alerted', 'A staff member has been notified for your table.');
       setTimeout(() => {
         setIsSuccess(false);
         setNotes('');
         onClose();
       }, 2500);
     } catch (err: any) {
-      setError(err.message || 'Failed to send request');
+      const msg = err.message || 'Failed to send request';
+      setError(msg);
+      toast.error('Assistance Request Failed', msg);
     } finally {
       setIsSubmitting(false);
     }

@@ -3,12 +3,15 @@ import { api } from '../../lib/api.js';
 import { DiningTable, Payment } from '../../types/index.js';
 import { Button } from '../../components/ui/Button.js';
 import { Dialog } from '../../components/ui/Dialog.js';
+import { useConfirm } from '../../components/ui/AlertDialog.js';
+import { toast } from '../../components/ui/Toast.js';
 import { formatCurrency, formatDateTime } from '../../lib/utils.js';
 import { Receipt, CreditCard, DollarSign, CheckCircle2, Printer, ArrowRight } from 'lucide-react';
 import { useAuthStore } from '../auth/AuthStore.js';
 
 export const BillingPage: React.FC = () => {
   const currentRestaurant = useAuthStore((state) => state.currentRestaurant);
+  const { confirm } = useConfirm();
   const [tables, setTables] = useState<DiningTable[]>([]);
   const [selectedTable, setSelectedTable] = useState<DiningTable | null>(null);
   const [billData, setBillData] = useState<any>(null);
@@ -52,6 +55,16 @@ export const BillingPage: React.FC = () => {
     e.preventDefault();
     if (!billData || !selectedTable || !billData.session) return;
 
+    const ok = await confirm({
+      title: 'Confirm Bill Settlement',
+      description: `Record ${paymentMethod.toUpperCase()} payment of ${formatCurrency(billData.bill.balanceDue, currentRestaurant?.currencySymbol || '₹')} and close table session for ${selectedTable.tableNumber}?`,
+      confirmText: 'Settle & Close Table',
+      cancelText: 'Cancel',
+      variant: 'default',
+    });
+
+    if (!ok) return;
+
     setIsSubmittingPayment(true);
     try {
       const res: any = await api.post('/billing/payments', {
@@ -74,11 +87,12 @@ export const BillingPage: React.FC = () => {
           paymentMethod,
         });
         setIsReceiptModalOpen(true);
+        toast.success('Payment Settled', `Receipt #${res.receiptNumber || ''} generated.`);
         fetchTables();
         handleSelectTable(selectedTable);
       }
     } catch (err: any) {
-      alert(err.message || 'Payment settlement failed');
+      toast.error('Payment Settlement Failed', err.message);
     } finally {
       setIsSubmittingPayment(false);
     }

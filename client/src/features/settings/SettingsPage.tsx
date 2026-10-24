@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/Ca
 import { Button } from '../../components/ui/Button.js';
 import { Input } from '../../components/ui/Input.js';
 import { ImageUpload } from '../../components/ui/ImageUpload.js';
+import { toast } from '../../components/ui/Toast.js';
 import { Restaurant, RestaurantSettings } from '../../types/index.js';
 import { Settings, Store, Clock, Percent, ShieldCheck, Users, Save } from 'lucide-react';
 import { useAuthStore } from '../auth/AuthStore.js';
@@ -115,9 +116,10 @@ export const SettingsPage: React.FC = () => {
       });
 
       setSaveSuccess(true);
+      toast.success('Settings Saved', 'Restaurant profile and policies updated successfully.');
       setTimeout(() => setSaveSuccess(false), 3000);
     } catch (err: any) {
-      alert(err.message || 'Failed to save settings');
+      toast.error('Failed to save settings', err.message);
     } finally {
       setIsSaving(false);
     }
