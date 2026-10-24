@@ -152,16 +152,6 @@ export const DashboardLayout: React.FC = () => {
 
         {/* User Card & Logout - Sticky at bottom of sidebar */}
         <div className="p-3 border-t border-border/40 space-y-2 shrink-0 bg-card">
-          {/* Real-time status */}
-          <div className="flex items-center justify-between px-2 text-[11px] font-medium text-muted-foreground">
-            <span>Socket Engine:</span>
-            <span className="flex items-center gap-1.5 font-bold">
-              <span
-                className={`h-2 w-2 rounded-full ${isSocketConnected ? 'bg-emerald-500 animate-pulse' : 'bg-rose-500'}`}
-              />
-              {isSocketConnected ? 'Live' : 'Connecting'}
-            </span>
-          </div>
 
           <div className="p-2.5 rounded-xl bg-muted/40 border border-border/30 flex items-center justify-between">
             <div className="overflow-hidden pr-2">
