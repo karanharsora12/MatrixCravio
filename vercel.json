@@ -8,8 +8,7 @@
     "server": {
       "root": "server",
       "framework": "express",
-      "entrypoint": "dist/server.js",
-      "buildCommand": "npm run build",
+      "entrypoint": "src/server.ts",
       "bindings": [
         {
           "type": "service",
