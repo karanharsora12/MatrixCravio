@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "type": "module",
   "description": "Backend API and Socket.IO engine for Matrix Cravio",
-  "main": "src/server.ts",
+  "main": "dist/server.js",
   "scripts": {
     "dev": "tsx watch src/server.ts",
     "build": "tsc",
